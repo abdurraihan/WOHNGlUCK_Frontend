@@ -1,5 +1,6 @@
 import { GoogleAuthProvider, getAuth, signInWithPopup } from "firebase/auth";
 import React from "react";
+import { FcGoogle } from "react-icons/fc";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { app } from "../firebase";
@@ -38,9 +39,10 @@ function OAuth() {
     <button
       onClick={handleGoogleClick}
       type="button"
-      className="bg-red-700 text-white p-3 rounded-lg uppercase hover:opacity-85"
+      className="flex items-center justify-center gap-3 w-full bg-white text-gray-700 p-3 rounded-lg border border-gray-300 shadow-md hover:shadow-lg transition-all hover:bg-gray-100 active:scale-95"
     >
-      Continue with Google
+      <FcGoogle size={24} /> {/* Google Logo */}
+      <span className="font-semibold text-md">Continue with Google</span>
     </button>
   );
 }

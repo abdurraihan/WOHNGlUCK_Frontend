@@ -1,6 +1,7 @@
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 import Header from "./Components/Header";
+import PrivateRouter from "./Components/PrivateRouter";
 import About from "./pages/About";
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
@@ -16,10 +17,13 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
-        <Route path="/profile" element={<Profile />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/sign-out" element={<SignOut />} />
+
+        <Route element={<PrivateRouter />}>
+          <Route path="/profile" element={<Profile />} />
+        </Route>
 
         <Route path="*" element={<NotFound />} />
       </Routes>
