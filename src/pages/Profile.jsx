@@ -1,8 +1,49 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-
 function Profile() {
   const { currentUser } = useSelector((state) => state.user);
+  const fileRef = useRef(null);
+  const [file, setFile] = useState(undefined);
+
+  useEffect(() => {
+    if (file) {
+      handleFileUpload(file);
+    }
+  }, [file]);
+
+  const handleFileUpload = async (file) => {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const response = await fetch(
+        `https://api.imgbb.com/1/upload?key=${
+          import.meta.env.VITE_IMAGEBB_API_KEY
+        }`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      console.log(response);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(data);
+      console.log("ImageBB Response:", data);
+
+      if (data.success) {
+        console.log("Image URL:", data.data.url);
+        // You can now use data.data.url to update your profile picture in your application state or backend.
+      } else {
+        console.error("ImageBB upload failed:", data.error.message);
+      }
+    } catch (error) {
+      console.error("Error uploading image:", error);
+    }
+  };
 
   return (
     <>
@@ -13,9 +54,18 @@ function Profile() {
           </h1>
 
           <form className="flex flex-col gap-5">
+            {/* input file for taking image for update profile image */}
+            <input
+              onChange={(e) => setFile(e.target.files[0])}
+              type="file"
+              ref={fileRef}
+              hidden
+              accept="image/*"
+            />
             {/* Profile Avatar */}
             <div className="flex justify-center">
               <img
+                onClick={() => fileRef.current.click()}
                 src={currentUser?.avatar || "/default-avatar.png"} // Fallback image
                 alt="Profile"
                 className="rounded-full h-32 w-32 object-cover cursor-pointer shadow-md hover:scale-105 transition-all border-2 border-gray-300"
