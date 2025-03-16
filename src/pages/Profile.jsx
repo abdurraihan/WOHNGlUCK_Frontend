@@ -40,8 +40,8 @@ function Profile() {
     setLoading(true);
     setError(null); // Clear previous errors
 
-    const formData = new FormData();
-    formData.append("image", file);
+    const formDataObj = new FormData();
+    formDataObj.append("image", file);
 
     try {
       const response = await fetch(
@@ -50,17 +50,16 @@ function Profile() {
         }`,
         {
           method: "POST",
-          body: formData,
+          body: formDataObj,
         }
       );
 
       if (!response.ok) {
-        const errorData = await response.json(); // Attempt to get error details from API
+        const errorData = await response.json();
         let errorMessage = `HTTP error! status: ${response.status}`;
         if (errorData && errorData.error && errorData.error.message) {
           errorMessage = errorData.error.message;
         }
-
         throw new Error(errorMessage);
       }
 
@@ -68,7 +67,6 @@ function Profile() {
 
       if (data.success) {
         console.log("Image URL:", data.data.url);
-
         setFormData({ ...formData, avatar: data.data.url });
       } else {
         throw new Error(data.error.message);
@@ -96,15 +94,14 @@ function Profile() {
         },
         body: JSON.stringify(formData),
       });
-
       const data = await res.json();
-      if (data.success == false) {
+      if (data.success === false) {
         dispatch(updateUserFailure(data.message));
         return;
       }
-      console.log("updatet data", data);
+      console.log("updated data", data);
       dispatch(updateUserSuccess(data));
-      toast.success("user update successfully !");
+      toast.success("User updated successfully!");
     } catch (error) {
       dispatch(updateUserFailure(error.message));
     }
@@ -112,7 +109,6 @@ function Profile() {
 
   const handleDeleteUser = async (e) => {
     e.preventDefault();
-
     try {
       dispatch(deleteUserStart());
       const res = await fetch(`/api/user/delete/${currentUser._id}`, {
@@ -122,18 +118,18 @@ function Profile() {
         },
       });
       const data = await res.json();
-      if (data.success == false) {
+      if (data.success === false) {
         dispatch(deleteUserFailure(data.message));
         return;
       }
       dispatch(deleteUserSuccess(data));
-      toast.success("user delete successfully !");
+      toast.success("User deleted successfully!");
     } catch (error) {
       dispatch(deleteUserFailure(error));
     }
   };
 
-  const handleSignOut = async (e) => {
+  const handleSignOut = async () => {
     try {
       dispatch(signInStart());
       const res = await fetch("/api/auth/signout");
@@ -143,117 +139,110 @@ function Profile() {
         return;
       }
       dispatch(signOutSuccess());
-      toast.success("sign out successfully !");
+      toast.success("Signed out successfully!");
     } catch (error) {
       dispatch(signInFailure(error));
     }
   };
 
   return (
-    <>
-      <div className="bg-gray-100 min-h-screen flex items-center justify-center">
-        <div className="p-6 max-w-lg w-full bg-white rounded-lg shadow-lg">
-          <h1 className="text-3xl font-semibold text-center text-gray-800 mb-6">
-            Profile
-          </h1>
-
-          <form onSubmit={handleSubit} className="flex flex-col gap-5">
-            <input
-              onChange={(e) => setFile(e.target.files[0])}
-              type="file"
-              ref={fileRef}
-              hidden
-              accept="image/*"
+    <div className="bg-gradient-to-r from-blue-100 to-blue-200 min-h-screen flex items-center justify-center py-10 px-4">
+      <div className="bg-white rounded-2xl shadow-2xl p-10 max-w-lg w-full">
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-center text-gray-800 mb-8">
+          <span className="block text-indigo-600">My</span>
+          <span className="block text-gray-700">Profile</span>
+        </h1>
+        <form onSubmit={handleSubit} className="space-y-6">
+          <input
+            onChange={(e) => setFile(e.target.files[0])}
+            type="file"
+            ref={fileRef}
+            hidden
+            accept="image/*"
+          />
+          <div className="flex justify-center">
+            <img
+              onClick={() => fileRef.current.click()}
+              src={formData.avatar || currentUser.avatar}
+              alt="Profile"
+              className="rounded-full h-32 w-32 object-cover cursor-pointer shadow-lg border-4 border-indigo-300 hover:scale-105 transition-transform"
             />
-            <div className="flex justify-center">
-              <img
-                onClick={() => fileRef.current.click()}
-                src={formData.avatar || currentUser.avatar}
-                alt="Profile"
-                className="rounded-full h-32 w-32 object-cover cursor-pointer shadow-md hover:scale-105 transition-all border-2 border-gray-300"
-                onChange={handleChange}
-              />
-            </div>
-
+          </div>
+          <div className="space-y-4">
             <div className="flex flex-col">
-              <label htmlFor="username" className="text-gray-700 font-medium">
+              <label htmlFor="username" className="text-gray-700 font-semibold">
                 Username
               </label>
               <input
                 type="text"
                 id="username"
                 placeholder="Username"
-                className="border p-3 rounded-lg focus:ring-2 focus:ring-slate-500 outline-none"
+                className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 defaultValue={currentUser.username}
                 onChange={handleChange}
               />
             </div>
-
             <div className="flex flex-col">
-              <label htmlFor="email" className="text-gray-700 font-medium">
+              <label htmlFor="email" className="text-gray-700 font-semibold">
                 Email
               </label>
               <input
                 type="email"
                 id="email"
                 placeholder="Email"
-                className="border p-3 rounded-lg focus:ring-2 focus:ring-slate-500 outline-none"
+                className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 defaultValue={currentUser.email}
                 onChange={handleChange}
               />
             </div>
-
             <div className="flex flex-col">
-              <label htmlFor="password" className="text-gray-700 font-medium">
+              <label htmlFor="password" className="text-gray-700 font-semibold">
                 Password
               </label>
               <input
                 type="password"
                 id="password"
                 placeholder="New Password"
-                className="border p-3 rounded-lg focus:ring-2 focus:ring-slate-500 outline-none"
+                className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 onChange={handleChange}
               />
             </div>
-
-            <button
-              className="bg-slate-700 text-white font-medium rounded-lg p-3 uppercase hover:bg-slate-800 transition-all disabled:opacity-80"
-              disabled={loading || fileLoading}
-            >
-              {loading ? "Uploading..." : "Update Profile"}
-            </button>
-
-            <Link
-              className="bg-green-700 text-white p-3 rounded-lg uppercase text-center hover:opacity-95"
-              to={"/create-listing"}
-            >
-              Create Listing
-            </Link>
-          </form>
-
-          {FileError && (
-            <div className="text-red-500 mt-4">Error: {FileError}</div>
-          )}
-
-          <p className="text-red-700 mt-5">{error ? error : ""}</p>
-
-          <div className="flex justify-between mt-6 text-sm">
-            <span
-              onClick={handleDeleteUser}
-              className="text-red-600 font-medium cursor-pointer hover:underline"
-            >
-              Delete Account
-            </span>
-            <span
-              onClick={handleSignOut}
-              className="text-red-600 font-medium cursor-pointer hover:underline"
-            >
-              Sign Out
-            </span>
           </div>
+          <button
+            className="w-full bg-indigo-600 text-white font-bold py-3 rounded-lg uppercase hover:bg-indigo-700 transition-colors disabled:opacity-70"
+            disabled={loading || fileLoading}
+          >
+            {loading ? "Updating..." : "Update Profile"}
+          </button>
+          <Link
+            className="w-full block text-center bg-gray-700 text-white py-3 rounded-lg uppercase font-bold hover:bg-green-700 transition-colors"
+            to={"/create-listing"}
+          >
+            Create Listing
+          </Link>
+        </form>
+        {FileError && (
+          <div className="text-red-500 mt-4 text-center">
+            Error: {FileError}
+          </div>
+        )}
+        {error && <p className="text-red-600 mt-5 text-center">{error}</p>}
+        <div className="flex justify-between mt-8 text-sm">
+          <span
+            onClick={handleDeleteUser}
+            className="text-red-600 font-medium cursor-pointer hover:underline"
+          >
+            Delete Account
+          </span>
+          <span
+            onClick={handleSignOut}
+            className="text-indigo-600 font-medium cursor-pointer hover:underline"
+          >
+            Sign Out
+          </span>
         </div>
       </div>
-    </>
+    </div>
   );
 }
 
