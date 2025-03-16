@@ -2,6 +2,9 @@ import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import {
+  deleteUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
   updateUserFailure,
   updateUserStart,
   updateUserSuccess,
@@ -13,7 +16,6 @@ function Profile() {
   const [file, setFile] = useState(null);
   const [fileLoading, setLoading] = useState(false);
   const [FileError, setError] = useState(null);
-  const [updateSuccess, setUpdateSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     username: currentUser.username,
@@ -103,6 +105,29 @@ function Profile() {
     }
   };
 
+  const handleDeleteUser = async (e) => {
+    e.preventDefault();
+
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await res.json();
+      if (data.success == false) {
+        dispatch(deleteUserFailure(data.message));
+        return;
+      }
+      dispatch(deleteUserSuccess(data));
+      toast.success("user delete successfully !");
+    } catch (error) {
+      dispatch(deleteUserFailure(error));
+    }
+  };
+
   return (
     <>
       <div className="bg-gray-100 min-h-screen flex items-center justify-center">
@@ -183,12 +208,12 @@ function Profile() {
           )}
 
           <p className="text-red-700 mt-5">{error ? error : ""}</p>
-          <p className="text-green-700 mt-5">
-            {updateSuccess ? "User is updated successfully!" : ""}
-          </p>
 
           <div className="flex justify-between mt-6 text-sm">
-            <span className="text-red-600 font-medium cursor-pointer hover:underline">
+            <span
+              onClick={handleDeleteUser}
+              className="text-red-600 font-medium cursor-pointer hover:underline"
+            >
               Delete Account
             </span>
             <span className="text-red-600 font-medium cursor-pointer hover:underline">
