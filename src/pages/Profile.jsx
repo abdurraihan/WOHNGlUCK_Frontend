@@ -1,9 +1,27 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
+import {
+  updateUserFailure,
+  updateUserStart,
+  updateUserSuccess,
+} from "../redux/user/userSlice";
+
 function Profile() {
-  const { currentUser } = useSelector((state) => state.user);
+  const { currentUser, loading, error } = useSelector((state) => state.user);
   const fileRef = useRef(null);
-  const [file, setFile] = useState(undefined);
+  const [file, setFile] = useState(null);
+  const [fileLoading, setLoading] = useState(false);
+  const [FileError, setError] = useState(null);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+
+  const [formData, setFormData] = useState({
+    username: currentUser.username,
+    email: currentUser.email,
+    avatar: currentUser.avatar,
+  });
+
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (file) {
@@ -12,6 +30,9 @@ function Profile() {
   }, [file]);
 
   const handleFileUpload = async (file) => {
+    setLoading(true);
+    setError(null); // Clear previous errors
+
     const formData = new FormData();
     formData.append("image", file);
 
@@ -25,23 +46,60 @@ function Profile() {
           body: formData,
         }
       );
-      console.log(response);
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json(); // Attempt to get error details from API
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        if (errorData && errorData.error && errorData.error.message) {
+          errorMessage = errorData.error.message;
+        }
+
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
-      console.log(data);
-      console.log("ImageBB Response:", data);
 
       if (data.success) {
         console.log("Image URL:", data.data.url);
-        // You can now use data.data.url to update your profile picture in your application state or backend.
+
+        setFormData({ ...formData, avatar: data.data.url });
       } else {
-        console.error("ImageBB upload failed:", data.error.message);
+        throw new Error(data.error.message);
       }
+    } catch (err) {
+      console.error("Error uploading image:", err);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  const handleSubit = async (e) => {
+    e.preventDefault();
+    try {
+      dispatch(updateUserStart());
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+      if (data.success == false) {
+        dispatch(updateUserFailure(data.message));
+        return;
+      }
+      console.log("updatet data", data);
+      dispatch(updateUserSuccess(data));
+      toast.success("user update successfully !");
     } catch (error) {
-      console.error("Error uploading image:", error);
+      dispatch(updateUserFailure(error.message));
     }
   };
 
@@ -53,8 +111,7 @@ function Profile() {
             Profile
           </h1>
 
-          <form className="flex flex-col gap-5">
-            {/* input file for taking image for update profile image */}
+          <form onSubmit={handleSubit} className="flex flex-col gap-5">
             <input
               onChange={(e) => setFile(e.target.files[0])}
               type="file"
@@ -62,17 +119,16 @@ function Profile() {
               hidden
               accept="image/*"
             />
-            {/* Profile Avatar */}
             <div className="flex justify-center">
               <img
                 onClick={() => fileRef.current.click()}
-                src={currentUser?.avatar || "/default-avatar.png"} // Fallback image
+                src={formData.avatar || currentUser.avatar}
                 alt="Profile"
                 className="rounded-full h-32 w-32 object-cover cursor-pointer shadow-md hover:scale-105 transition-all border-2 border-gray-300"
+                onChange={handleChange}
               />
             </div>
 
-            {/* Input Fields */}
             <div className="flex flex-col">
               <label htmlFor="username" className="text-gray-700 font-medium">
                 Username
@@ -82,6 +138,8 @@ function Profile() {
                 id="username"
                 placeholder="Username"
                 className="border p-3 rounded-lg focus:ring-2 focus:ring-slate-500 outline-none"
+                defaultValue={currentUser.username}
+                onChange={handleChange}
               />
             </div>
 
@@ -94,6 +152,8 @@ function Profile() {
                 id="email"
                 placeholder="Email"
                 className="border p-3 rounded-lg focus:ring-2 focus:ring-slate-500 outline-none"
+                defaultValue={currentUser.email}
+                onChange={handleChange}
               />
             </div>
 
@@ -106,16 +166,27 @@ function Profile() {
                 id="password"
                 placeholder="New Password"
                 className="border p-3 rounded-lg focus:ring-2 focus:ring-slate-500 outline-none"
+                onChange={handleChange}
               />
             </div>
 
-            {/* Update Button */}
-            <button className="bg-slate-700 text-white font-medium rounded-lg p-3 uppercase hover:bg-slate-800 transition-all disabled:opacity-80">
-              Update Profile
+            <button
+              className="bg-slate-700 text-white font-medium rounded-lg p-3 uppercase hover:bg-slate-800 transition-all disabled:opacity-80"
+              disabled={loading || fileLoading}
+            >
+              {loading ? "Uploading..." : "Update Profile"}
             </button>
           </form>
 
-          {/* Delete & Sign Out */}
+          {FileError && (
+            <div className="text-red-500 mt-4">Error: {FileError}</div>
+          )}
+
+          <p className="text-red-700 mt-5">{error ? error : ""}</p>
+          <p className="text-green-700 mt-5">
+            {updateSuccess ? "User is updated successfully!" : ""}
+          </p>
+
           <div className="flex justify-between mt-6 text-sm">
             <span className="text-red-600 font-medium cursor-pointer hover:underline">
               Delete Account
