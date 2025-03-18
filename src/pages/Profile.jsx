@@ -1,3 +1,4 @@
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import React, { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
@@ -21,6 +22,9 @@ function Profile() {
   const [file, setFile] = useState(null);
   const [fileLoading, setLoading] = useState(false);
   const [FileError, setError] = useState(null);
+  const [showListingError, setShowListingError] = useState(false);
+  const [userListings, setUserListings] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     username: currentUser.username,
@@ -145,8 +149,22 @@ function Profile() {
     }
   };
 
+  const handleShowListings = async () => {
+    try {
+      setShowListingError(false);
+      const res = await fetch(`/api/listing/user/${currentUser._id}`);
+      const data = await res.json();
+      if (data.success === false) {
+        setShowListingError(true);
+        return;
+      }
+      setUserListings(data);
+    } catch (error) {
+      setShowListingError(error);
+    }
+  };
   return (
-    <div className="bg-gradient-to-r from-blue-100 to-blue-200 min-h-screen flex items-center justify-center py-10 px-4">
+    <div className="bg-gradient-to-r from-blue-100 to-blue-200 min-h-screen flex items-center justify-center  py-10 px-4">
       <div className="bg-white rounded-2xl shadow-2xl p-10 max-w-lg w-full">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-center text-gray-800 mb-8">
           <span className="block text-indigo-600">My</span>
@@ -189,23 +207,37 @@ function Profile() {
               <input
                 type="email"
                 id="email"
+                readOnly
                 placeholder="Email"
                 className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
                 defaultValue={currentUser.email}
                 onChange={handleChange}
               />
             </div>
-            <div className="flex flex-col">
+            <div className="flex flex-col relative">
               <label htmlFor="password" className="text-gray-700 font-semibold">
                 Password
               </label>
-              <input
-                type="password"
-                id="password"
-                placeholder="New Password"
-                className="border border-gray-300 p-3 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                onChange={handleChange}
-              />
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  id="password"
+                  placeholder="New Password"
+                  className="border border-gray-300 p-3 rounded-lg w-full pr-10 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                  onChange={handleChange}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-5 w-5" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
           <button
@@ -240,7 +272,71 @@ function Profile() {
           >
             Sign Out
           </span>
+          <button onClick={handleShowListings} className="text-green-700">
+            Show Listings
+          </button>
         </div>
+        <p className="text-red-700">
+          {showListingError ? "Error showing listing" : " "}
+        </p>
+
+        {/* if not creat listing yet  */}
+        {userListings.length === 0 && (
+          <div className="flex flex-col items-center text-center bg-gray-100 p-6 rounded-lg shadow-md mt-6">
+            <p className="text-gray-700 text-lg font-semibold">
+              You haven't created any listings yet!
+            </p>
+            <p className="text-gray-500 text-sm mt-1">
+              Start by adding your first listing now.
+            </p>
+            <Link
+              to="/create-listing"
+              className="mt-4 bg-gray-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-500 transition-colors"
+            >
+              Create Listing
+            </Link>
+          </div>
+        )}
+        {/* Add User Listings Section Below */}
+        {userListings && userListings.length > 0 && (
+          <div className="max-w-2xl w-full bg-white shadow-lg rounded-lg p-6 mt-10">
+            <h2 className="text-center text-2xl font-bold text-gray-800 mb-6">
+              Your Listings
+            </h2>
+            <div className="flex flex-col gap-6">
+              {userListings.map((listing) => (
+                <div
+                  key={listing._id}
+                  className="bg-gray-100 rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow p-4 flex flex-col sm:flex-row items-center gap-4"
+                >
+                  <Link to={`/listing/${listing._id}`} className="block">
+                    <img
+                      src={listing.imageUrls[0]}
+                      alt="Listing Cover"
+                      className="w-24 h-24 object-cover rounded-md hover:scale-105 transition-transform"
+                    />
+                  </Link>
+                  <div className="flex-1 text-center sm:text-left">
+                    <Link
+                      to={`/listing/${listing._id}`}
+                      className="text-lg font-semibold text-gray-800 hover:underline block truncate"
+                    >
+                      {listing.name}
+                    </Link>
+                    <div className="flex justify-center sm:justify-start gap-4 mt-2">
+                      <button className="text-red-600 font-medium hover:text-red-800 transition-colors">
+                        Delete
+                      </button>
+                      <button className="text-green-600 font-medium hover:text-green-800 transition-colors">
+                        Edit
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
