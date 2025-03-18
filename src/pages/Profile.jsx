@@ -163,6 +163,27 @@ function Profile() {
       setShowListingError(error);
     }
   };
+
+  const handleListingDelete = async (listingId) => {
+    console.log(listingId);
+    try {
+      const res = await fetch(`/api/listing/delete/${listingId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        toast.error(data.message);
+        return;
+      }
+      toast.success("Listing deleted successfully!");
+      setUserListings((prev) =>
+        prev.filter((listing) => listing._id !== listingId)
+      );
+    } catch (error) {
+      toast.Error(error.message);
+    }
+  };
+
   return (
     <div className="bg-gradient-to-r from-blue-100 to-blue-200 min-h-screen flex items-center justify-center  py-10 px-4">
       <div className="bg-white rounded-2xl shadow-2xl p-10 max-w-lg w-full">
@@ -324,12 +345,17 @@ function Profile() {
                       {listing.name}
                     </Link>
                     <div className="flex justify-center sm:justify-start gap-4 mt-2">
-                      <button className="text-red-600 font-medium hover:text-red-800 transition-colors">
+                      <button
+                        onClick={() => handleListingDelete(listing._id)}
+                        className="text-red-600 font-medium hover:text-red-800 transition-colors"
+                      >
                         Delete
                       </button>
-                      <button className="text-green-600 font-medium hover:text-green-800 transition-colors">
-                        Edit
-                      </button>
+                      <Link to={`/update-listing/${listing._id}`}>
+                        <button className="text-green-600 font-medium hover:text-green-800 transition-colors">
+                          Edit
+                        </button>
+                      </Link>
                     </div>
                   </div>
                 </div>
