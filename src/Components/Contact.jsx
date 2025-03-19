@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-
 export default function Contact({ listing }) {
   const [landlord, setLandlord] = useState(null);
   const [message, setMessage] = useState("");
+  const { currentUser } = useSelector((state) => state.user);
   const onChange = (e) => {
     setMessage(e.target.value);
   };
+
+  //   console.log(currentUser.email);
 
   useEffect(() => {
     const fetchLandlord = async () => {
@@ -42,7 +45,9 @@ export default function Contact({ listing }) {
           <Link
             to={`mailto:${landlord.email}?subject=${encodeURIComponent(
               "Regarding " + listing.name
-            )}&body=${encodeURIComponent(message)}`}
+            )}&body=${encodeURIComponent(
+              `From: ${currentUser.email}\n\n${message}`
+            )}`}
             className="bg-slate-700 text-white text-center p-3 uppercase rounded-lg hover:opacity-95"
           >
             Send Message
