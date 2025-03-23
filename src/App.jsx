@@ -8,6 +8,7 @@ import Home from "./pages/Home";
 import Listing from "./pages/Listing";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
+import Search from "./pages/Search";
 import SignIn from "./pages/SignIn";
 import SignOut from "./pages/SignOut";
 import SignUp from "./pages/SignUp";
@@ -23,6 +24,7 @@ function App() {
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
         <Route path="/sign-out" element={<SignOut />} />
+        <Route path="/search" element={<Search />} />
         <Route path="/listing/:listingId" element={<Listing />} />
 
         <Route element={<PrivateRouter />}>
