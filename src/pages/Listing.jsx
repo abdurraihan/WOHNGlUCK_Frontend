@@ -31,7 +31,7 @@ export default function Listing() {
         setLoading(true);
         const res = await fetch(`/api/listing/get/${params.listingId}`);
         const data = await res.json();
-        console.log("Fetched Data:", data); // Debugging API response
+        console.log("Fetched Data:", data);
 
         if (!data || data.success === false) {
           setError(true);
@@ -115,7 +115,7 @@ export default function Listing() {
               </p>
               {listing.offer && (
                 <p className="bg-green-900 w-full max-w-[200px] text-white text-center p-1 rounded-md">
-                  ${+listing.regularPrice - +listing.discountPrice}
+                  ${+listing.regularPrice - +listing.discountPrice} OFF
                 </p>
               )}
             </div>
