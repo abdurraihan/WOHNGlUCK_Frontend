@@ -18,7 +18,9 @@ export default function Home() {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const res1 = await fetch("/api/listing/get?offer=true&limit=4");
+        const res1 = await fetch(
+          "https://wohngluk-api.onrender.com/api/listing/get?offer=true&limit=4"
+        );
         const data1 = await res1.json();
         setOfferListings(data1);
 
