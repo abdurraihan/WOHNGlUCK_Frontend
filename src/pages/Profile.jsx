@@ -149,21 +149,6 @@ function Profile() {
     }
   };
 
-  //   try {
-  //     setShowListingError(false);
-  //     const res = await fetch(`/api/listing/user/${currentUser._id}`);
-  //     const data = await res.json();
-  //     if (data.success === false) {
-  //       setShowListingError(true);
-  //       return;
-  // const handleShowListings = async () => {
-  //     }
-  //     setUserListings(data);
-  //   } catch (error) {
-  //     setShowListingError(error);
-  //   }
-  // };
-
   const handleShowListings = async () => {
     try {
       setShowListingError(false);

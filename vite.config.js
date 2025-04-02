@@ -6,7 +6,7 @@ export default defineConfig(({ mode }) => {
     server: {
       proxy: {
         "/api": {
-          target: "http://localhost:3000",
+          target: "https://wohngluk-api.onrender.com",
           secure: false,
         },
       },
