@@ -91,16 +91,13 @@ function Profile() {
     e.preventDefault();
     try {
       dispatch(updateUserStart());
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/user/update/${currentUser._id}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const res = await fetch(`/api/user/update/${currentUser._id}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
       const data = await res.json();
       if (data.success === false) {
         dispatch(updateUserFailure(data.message));
@@ -118,15 +115,12 @@ function Profile() {
     e.preventDefault();
     try {
       dispatch(deleteUserStart());
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/user/delete/${currentUser._id}`,
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
       const data = await res.json();
       if (data.success === false) {
         dispatch(deleteUserFailure(data.message));
@@ -142,9 +136,7 @@ function Profile() {
   const handleSignOut = async () => {
     try {
       dispatch(signInStart());
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/auth/signout`
-      );
+      const res = await fetch("/api/auth/signout");
       const data = await res.json();
       if (data.success === false) {
         dispatch(signOutFailure(data.message));
@@ -157,32 +149,45 @@ function Profile() {
     }
   };
 
+  //   try {
+  //     setShowListingError(false);
+  //     const res = await fetch(`/api/listing/user/${currentUser._id}`);
+  //     const data = await res.json();
+  //     if (data.success === false) {
+  //       setShowListingError(true);
+  //       return;
+  // const handleShowListings = async () => {
+  //     }
+  //     setUserListings(data);
+  //   } catch (error) {
+  //     setShowListingError(error);
+  //   }
+  // };
+
   const handleShowListings = async () => {
     try {
       setShowListingError(false);
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/listing/user/${currentUser._id}`
-      );
+      const res = await fetch(`/api/listing/user/${currentUser._id}`);
       const data = await res.json();
+
       if (data.success === false) {
         setShowListingError(true);
         return;
       }
+
       setUserListings(data);
     } catch (error) {
-      setShowListingError(error);
+      console.error("Error fetching listings:", error);
+      setShowListingError(true);
     }
   };
 
   const handleListingDelete = async (listingId) => {
     console.log(listingId);
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_URL}/api/listing/delete/${listingId}`,
-        {
-          method: "DELETE",
-        }
-      );
+      const res = await fetch(`/api/listing/delete/${listingId}`, {
+        method: "DELETE",
+      });
       const data = await res.json();
       if (data.success === false) {
         toast.error(data.message);
